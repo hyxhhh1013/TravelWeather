@@ -51,9 +51,24 @@ def clear_runs(paragraph):
         r._element.getparent().remove(r._element)
 
 
+def set_left_tab(paragraph, pos_twips: int):
+    pPr = paragraph._p.get_or_add_pPr()
+    old = pPr.find(qn('w:tabs'))
+    if old is not None:
+        pPr.remove(old)
+    tabs = OxmlElement('w:tabs')
+    tab = OxmlElement('w:tab')
+    tab.set(qn('w:val'), 'left')
+    tab.set(qn('w:pos'), str(pos_twips))
+    tabs.append(tab)
+    pPr.append(tabs)
+
+
 def fill_cover_line(paragraph, text, size=14):
+    """封面字段统一四号宋体，避免中英文混排被拆成 Times New Roman。"""
     clear_runs(paragraph)
-    add_mixed_runs(paragraph, text, east='宋体', size=size, bold=False)
+    run = paragraph.add_run(text)
+    set_run_font(run, east='宋体', ascii_font='宋体', size=size, bold=False)
 
 
 def disable_indent(p):
@@ -162,8 +177,11 @@ def build():
     doc = Document(str(OUT))
 
     paras = doc.paragraphs
-    fill_cover_line(paras[3], '学  院：信息与智能科学技术学院    班  级：计科2024级')
-    fill_cover_line(paras[4], '姓  名：黄奕轩                    学  号：202440210217')
+    # 封面两栏用制表符对齐，班级为计算机24-2
+    set_left_tab(paras[3], 5100)
+    set_left_tab(paras[4], 5100)
+    fill_cover_line(paras[3], '学  院：信息与智能科学技术学院\t班  级：计算机24-2')
+    fill_cover_line(paras[4], '姓  名：黄奕轩\t学  号：202440210217')
     fill_cover_line(paras[5], '课程论文题目：基于HarmonyOS的出行天气助手设计与实现')
     fill_cover_line(paras[6], '课程名称：移动应用开发')
 
@@ -177,22 +195,26 @@ def build():
     p = doc.add_paragraph(style='Normal')
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     disable_indent(p)
-    add_mixed_runs(p, '基于HarmonyOS的出行天气助手设计与实现', east='黑体', size=18, bold=True)
+    run = p.add_run('基于HarmonyOS的出行天气助手设计与实现')
+    set_run_font(run, east='黑体', ascii_font='黑体', size=18, bold=True)
 
     p = doc.add_paragraph(style='Normal')
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     disable_indent(p)
-    add_mixed_runs(p, '——面向短途出行的多城市天气查询应用', east='宋体', size=15, bold=False)
+    run = p.add_run('——面向短途出行的多城市天气查询应用')
+    set_run_font(run, east='宋体', ascii_font='宋体', size=15, bold=False)
 
     p = doc.add_paragraph(style='Normal')
     p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     disable_indent(p)
-    add_mixed_runs(p, '学    生：黄奕轩', east='宋体', size=10.5, bold=False)
+    run = p.add_run('学    生：黄奕轩')
+    set_run_font(run, east='宋体', ascii_font='宋体', size=10.5, bold=False)
 
     p = doc.add_paragraph(style='Normal')
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     disable_indent(p)
-    add_mixed_runs(p, '（信息与智能科学技术学院计科2024级，学号202440210217）', east='宋体', size=10.5, bold=False)
+    run = p.add_run('（信息与智能科学技术学院计算机24-2，学号202440210217）')
+    set_run_font(run, east='宋体', ascii_font='宋体', size=10.5, bold=False)
 
     doc.add_paragraph(style='Normal')
 
