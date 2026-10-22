@@ -1,4 +1,7 @@
-﻿b7d2fd7 (HEAD -> master) docs: 瀵煎嚭 Git 鎻愪氦璁板綍鏂囨湰涓庢埅鍥炬潗鏂?d4a6ab4 docs: 琛ュ厖 README銆佽绋嬫姤鍛婁笌鎻愪氦娓呭崟
-a175f5a feat: 瀹炵幇 Navigation 澶氶〉璺宠浆銆佽矾鐢变紶鍙備笌璇︽儏椤靛浘琛?78ce60e feat: 瀹屾垚棣栭〉甯冨眬銆佸煄甯?Grid/List 涓庡姞杞芥€佸鐞?80a6d47 feat: 灏佽 WeatherCard 涓?TempChart 鍙鐢ㄨ嚜瀹氫箟缁勪欢
-d25c162 feat: 娣诲姞澶╂皵鏁版嵁妯″瀷銆佸煄甯傚父閲忎笌 Open-Meteo 缃戠粶鏈嶅姟
-b081d9e chore: 鍒濆鍖栧嚭琛屽ぉ姘斿姪鎵嬪伐绋嬮鏋朵笌璧勬簮閰嶇疆
+7f84da5 (HEAD -> master) docs: 导出 Git 提交记录文本与截图材料
+d4a6ab4 docs: 补充 README、课程报告与提交清单
+a175f5a feat: 实现 Navigation 多页跳转、路由传参与详情页图表
+78ce60e feat: 完成首页布局、城市 Grid/List 与加载态处理
+80a6d47 feat: 封装 WeatherCard 与 TempChart 可复用自定义组件
+d25c162 feat: 添加天气数据模型、城市常量与 Open-Meteo 网络服务
+b081d9e chore: 初始化出行天气助手工程骨架与资源配置
