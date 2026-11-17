@@ -1,4 +1,5 @@
 {
+  "modelVersion": "5.0.0",
   "name": "travelweather",
   "version": "1.0.0",
   "description": "出行天气助手 - 移动应用开发课程大作业",

@@ -1,62 +1,86 @@
+import { formatTemp, shortDate, weekdayLabel } from '../model/WeatherModels'
+
 /**
- * 简易温度柱状图（加分项：数据可视化）
- * 使用网络返回的每日最高温动态绘制
+ * 七日最高 / 最低气温区间图（加分项：数据可视化）
  */
 @ComponentV2
 export struct TempChart {
-  @Param title: string = '未来气温趋势'
+  @Param title: string = '七日气温'
   @Param labels: string[] = []
-  @Param values: number[] = []
+  @Param highs: number[] = []
+  @Param lows: number[] = []
 
-  private maxValue(): number {
-    if (this.values.length === 0) {
-      return 1
+  private count(): number {
+    let total = this.highs.length
+    if (this.lows.length < total) {
+      total = this.lows.length
     }
-    let max = this.values[0]
-    for (let i = 1; i < this.values.length; i++) {
-      if (this.values[i] > max) {
-        max = this.values[i]
-      }
+    if (this.labels.length < total) {
+      total = this.labels.length
     }
-    return max <= 0 ? 1 : max
+    return total
   }
 
-  private minValue(): number {
-    if (this.values.length === 0) {
+  private lowBound(): number {
+    const total = this.count()
+    if (total === 0) {
       return 0
     }
-    let min = this.values[0]
-    for (let i = 1; i < this.values.length; i++) {
-      if (this.values[i] < min) {
-        min = this.values[i]
+    let min = this.lows[0]
+    for (let i = 1; i < total; i++) {
+      if (this.lows[i] < min) {
+        min = this.lows[i]
       }
     }
     return min
   }
 
-  private barHeight(value: number): number {
-    const min = this.minValue()
-    const max = this.maxValue()
-    const span = Math.max(max - min, 1)
-    return 40 + ((value - min) / span) * 100
+  private highBound(): number {
+    const total = this.count()
+    if (total === 0) {
+      return 1
+    }
+    let max = this.highs[0]
+    for (let i = 1; i < total; i++) {
+      if (this.highs[i] > max) {
+        max = this.highs[i]
+      }
+    }
+    return max
   }
 
-  private shortLabel(date: string): string {
-    if (date.length >= 10) {
-      return date.substring(5)
+  private rangeHeight(high: number, low: number): number {
+    const span = Math.max(this.highBound() - this.lowBound(), 1)
+    const height = ((high - low) / span) * 108
+    if (height < 18) {
+      return 18
     }
-    return date
+    return height
+  }
+
+  private rangeTop(high: number, low: number): number {
+    const span = Math.max(this.highBound() - this.lowBound(), 1)
+    const top = ((this.highBound() - high) / span) * 108
+    const height = this.rangeHeight(high, low)
+    const maxTop = 108 - height
+    if (top > maxTop) {
+      return maxTop
+    }
+    if (top < 0) {
+      return 0
+    }
+    return top
   }
 
   build() {
-    Column({ space: 12 }) {
+    Column({ space: 14 }) {
       Text(this.title)
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
         .fontColor($r('app.color.text_primary'))
         .width('100%')
 
-      if (this.values.length === 0) {
+      if (this.count() === 0) {
         Text('暂无图表数据')
           .fontSize(14)
           .fontColor($r('app.color.text_secondary'))
@@ -64,37 +88,53 @@ export struct TempChart {
           .textAlign(TextAlign.Center)
           .padding(24)
       } else {
-        Row({ space: 8 }) {
-          ForEach(this.values, (value: number, index: number) => {
-            Column({ space: 6 }) {
-              Text(`${value.toFixed(0)}°`)
-                .fontSize(11)
-                .fontColor($r('app.color.text_secondary'))
-              Column()
-                .width(18)
-                .height(this.barHeight(value))
-                .borderRadius(8)
-                .linearGradient({
-                  angle: 180,
-                  colors: [['#6EA8FF', 0], ['#2F6BFF', 1]]
-                })
-              Text(this.shortLabel(this.labels[index] ?? ''))
-                .fontSize(10)
-                .fontColor($r('app.color.text_secondary'))
+        Row() {
+          ForEach(this.highs, (high: number, index: number) => {
+            if (index < this.count()) {
+              Column({ space: 4 }) {
+                Text(formatTemp(high))
+                  .fontSize(11)
+                  .fontColor($r('app.color.text_primary'))
+                Stack({ alignContent: Alignment.Top }) {
+                  Column()
+                    .width(8)
+                    .height(108)
+                    .borderRadius(8)
+                    .backgroundColor('#E4EAF3')
+                  Column()
+                    .width(8)
+                    .height(this.rangeHeight(high, this.lows[index]))
+                    .margin({ top: this.rangeTop(high, this.lows[index]) })
+                    .borderRadius(8)
+                    .linearGradient({
+                      angle: 180,
+                      colors: [['#8ECAFF', 0], ['#1F6FE5', 1]]
+                    })
+                }
+                .width(28)
+                .height(108)
+                Text(formatTemp(this.lows[index]))
+                  .fontSize(11)
+                  .fontColor($r('app.color.text_secondary'))
+                Text(weekdayLabel(this.labels[index] ?? ''))
+                  .fontSize(11)
+                  .fontColor($r('app.color.text_primary'))
+                Text(shortDate(this.labels[index] ?? ''))
+                  .fontSize(10)
+                  .fontColor($r('app.color.text_secondary'))
+              }
+              .layoutWeight(1)
+              .alignItems(HorizontalAlign.Center)
             }
-            .layoutWeight(1)
-            .alignItems(HorizontalAlign.Center)
-            .justifyContent(FlexAlign.End)
-            .height(170)
-          }, (value: number, index: number) => `${index}-${value}`)
+          }, (high: number, index: number) => `${index}-${high}`)
         }
         .width('100%')
-        .alignItems(VerticalAlign.Bottom)
+        .alignItems(VerticalAlign.Top)
       }
     }
     .width('100%')
     .padding(16)
-    .borderRadius(16)
-    .backgroundColor($r('app.color.card_background'))
+    .borderRadius(20)
+    .backgroundColor(Color.White)
   }
 }
